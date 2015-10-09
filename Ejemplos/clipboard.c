@@ -13,8 +13,12 @@ MODULE_AUTHOR("Juan Carlos Saez");
 
 #define BUFFER_LENGTH       PAGE_SIZE
 
+typedef struct proc_dir_entry proc_dir_entry_t;
+
+typedef struct {} caracola;
+
 static struct proc_dir_entry *proc_entry;
-static char *clipboard;  // Space for the "clipboard"
+static char clipboard[PAGE_SIZE] = {'\0'};  // Space for the "clipboard"
 
 static ssize_t clipboard_write(struct file *filp, const char __user *buf, size_t len, loff_t *off) {
   int available_space = BUFFER_LENGTH-1;
@@ -68,17 +72,17 @@ static const struct file_operations proc_entry_fops = {
 int init_clipboard_module( void )
 {
   int ret = 0;
-  clipboard = (char *)vmalloc( BUFFER_LENGTH );
+  //clipboard = (char *)vmalloc( BUFFER_LENGTH );
 
   if (!clipboard) {
     ret = -ENOMEM;
   } else {
 
-    memset( clipboard, 0, BUFFER_LENGTH );
+    //memset( clipboard, 0, BUFFER_LENGTH );
     proc_entry = proc_create( "clipboard", 0666, NULL, &proc_entry_fops);
     if (proc_entry == NULL) {
       ret = -ENOMEM;
-      vfree(clipboard);
+      //vfree(clipboard);
       printk(KERN_INFO "Clipboard: Can't create /proc entry\n");
     } else {
       printk(KERN_INFO "Clipboard: Module loaded\n");
@@ -93,7 +97,7 @@ int init_clipboard_module( void )
 void exit_clipboard_module( void )
 {
   remove_proc_entry("clipboard", NULL);
-  vfree(clipboard);
+  //vfree(clipboard);
   printk(KERN_INFO "Clipboard: Module unloaded.\n");
 }
 
